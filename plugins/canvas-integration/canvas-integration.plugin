@@ -1,0 +1,9 @@
+[Plugin]
+Module=canvas-integration
+Loader=C
+IAge=2
+Name=Canvas Integration
+Description=Integration for Canvas Assignments
+Icon=tag
+Authors=Shane M. (srmenzies@nic.edu)
+Copyright=Copyright © 2020 Shane Menzies

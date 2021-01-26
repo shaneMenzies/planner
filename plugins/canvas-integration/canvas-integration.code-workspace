@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"name": "canvas-integration",
+			"path": "."
+		},
+		{
+			"name": "sidebar-labels",
+			"path": "../planner/plugins/sidebar-labels"
+		},
+		{
+			"path": "../planner"
+		}
+	],
+	"settings": {
+		"mesonbuild.configureOnOpen": true
+	}
+}
