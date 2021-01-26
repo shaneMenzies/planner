@@ -1,4 +1,5 @@
 public class Plugins.CanvasIntegration : Peas.ExtensionBase, Peas.Activatable {
+    Plugins.Interface plugins;
     public Object object { owned get; construct; }
     
     public Gtk.ListBox listbox;
@@ -6,71 +7,51 @@ public class Plugins.CanvasIntegration : Peas.ExtensionBase, Peas.Activatable {
 
     private Gtk.Revealer main_revealer;
     private Gtk.Grid main_grid;
-    
-    public void activate() {
+
+    // Hardcoded project id, 12 digits long so shouldn't come up in any of the 
+    // ids generated through Utils.generate_id using default length of 10
+    private int64 canvas_project_id = 112358132134;
+    private int canvas_color = 0xE22B27;
+
+    bool databaseStatus = false;
+
+    void databaseOpened() {
+        databaseStatus = true;
+    }
+
+    // Inserts a new item into the canvas project with the inputted title, 
+    // description, and due date.
+    private void insert_item (string title, string description, string due_date) 
+    {
+        var item = new Objects.Item();
+            item.project_id = canvas_project_id;
+            item.due_date = due_date;
+            item.content = title;
+            item.note = description;
+            item.id = Planner.utils.generate_id ();
+
+            Planner.database.insert_item (item, -1);
+    }
+
+    public void activate() 
+    {
+        // Open the database and wait for the signal that it's opened
+        Planner.database.opened.connect (databaseOpened);
 
         Planner.database.open_database();
 
-        int64 project_id = 3034265335;
-        string section_id_output = "";
+        while (databaseStatus == false) {}
 
-        Gee.ArrayList<Objects.Section?> section_list = Planner.database.get_all_sections();
+        // Check to see if the "Canvas Items" project already exists, if not,
+        // then make it.
+        if (!Planner.database.project_exists(canvas_project_id) {
+            var canvas_project = new Objects.project();
+            canvas_project.id = canvas_project_id;
+            canvas_project.name = "Canvas Items";
+            canvas_project.color = canvas_color;
 
-        foreach(Objects.Section section in section_list) {
-
-            section_id_output += section.name;
-            section_id_output += section.id.to_string();
-            section_id_output += "\n";
-
-            var debugDialog = new Gtk.MessageDialog(Planner.main_window.MainWindow, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE ,"%s", section_id_output );
-
+            Planner.database.insert_project(canvas_project);
         }
-        
-        int priority = 1;
-        int64 section_id = 1;
-        int is_todoist = 0;
-        string due_date = "tomorrow";
-
-        var item = new Objects.Item ();
-                item.priority = priority;         
-                item.project_id = project_id;
-                item.section_id = section_id;
-                item.is_todoist = is_todoist;
-                item.due_date = due_date;
-                item.content = "test test test";
-                item.note = "Test Test Test";
-                int64 temp_id_mapping = Planner.utils.generate_id ();
-                
-                if (is_todoist == 1) {
-                    var cancellable = new Cancellable ();
-                    Planner.todoist.add_item.begin (item, cancellable, index, temp_id_mapping);
-                } else {
-                    item.id = Planner.utils.generate_id ();
-                    if (Planner.database.insert_item (item, index)) {
-                        var i = index;
-                        if (i != -1) {
-                            i++;
-                        }
-
-                        var new_item = new Widgets.NewItem (
-                            project_id,
-                            section_id,
-                            is_todoist,
-                            due_date,
-                            i,
-                            listbox,
-                            priority
-                        );
-
-                        if (index == -1) {
-                            listbox.add (new_item);
-                        } else {
-                            listbox.insert (new_item, i);
-                        }
-
-                        listbox.show_all ();
-                    }
-                }
     }
 
     public void deactivate() {

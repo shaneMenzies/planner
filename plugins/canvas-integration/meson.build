@@ -16,7 +16,7 @@ shared_module(
     module_files,
     dependencies: module_deps,
     install: true,
-    install_dir: join_paths(module_name),
+    install_dir: join_paths(pluginsdir, module_name),
 )
 
 custom_target(module_name + '.plugin_merge',
@@ -31,5 +31,5 @@ custom_target(module_name + '.plugin_merge',
                '-o@OUTPUT@',
                ],
     install : true,
-    install_dir: join_paths(module_name),
+    install_dir: join_paths(pluginsdir, module_name),
 )
